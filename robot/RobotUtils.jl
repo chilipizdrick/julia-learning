@@ -25,7 +25,7 @@ inverse_side(side::HorizonSide)::HorizonSide = HorizonSide(mod(Int(side) + 2, 4)
 
 @enum Diagonal NordWest = 0 WestSud = 1 SudOst = 2 OstNord = 3
 
-function assosiate_diagonal(diagonal::Diagonal)
+function associate_diagonal(diagonal::Diagonal)
     if Int(diagonal) === 0
         return (Nord, West)
     elseif Int(diagonal) === 1
@@ -102,3 +102,18 @@ function check_markers!(r::Robot)::Bool
 end
 
 rotate_side(side::HorizonSide)::HorizonSide = HorizonSide(mod(Int(side) + 1, 4))
+
+
+function count_markers_in_line!(r, side)::Integer
+    count = 0
+    if ismarker(r)
+        count += 1
+    end
+    while !isborder(r, side)
+        move!(r, side)
+        if ismarker(r)
+            count += 1
+        end
+    end
+    return count
+end
