@@ -3,13 +3,13 @@ include("./RobotUtils.jl")
 
 
 function perimeter!(r::Robot)
-    move_until!(r, Nord)
+    move_until_p!(r, Nord)
     
     side_tuple = (West, Sud, Ost, Nord, West)
     idx = 1
     while idx < 6
         side = side_tuple[idx]
-        mark_flag = move_until!(r, side, marking=true)
+        mark_flag = move_until_p!(r, side; marking=true)
         if mark_flag && idx < 5
             idx += 1
             side = side_tuple[idx]
