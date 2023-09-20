@@ -1,5 +1,5 @@
 using HorizonSideRobots
-include("./RobotUtils.jl")
+include("../RobotUtils.jl")
 
 
 function diagonal_cross!(r::Robot)

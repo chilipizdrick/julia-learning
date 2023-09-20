@@ -1,5 +1,5 @@
 using HorizonSideRobots
-include("./RobotUtils.jl")
+include("../RobotUtils.jl")
 
 
 function straight_cross!(r::Robot)

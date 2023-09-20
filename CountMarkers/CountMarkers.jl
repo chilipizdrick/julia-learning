@@ -1,11 +1,11 @@
 using HorizonSideRobots
-include("RobotUtils.jl")
+include("../RobotUtils.jl")
 
 
 function count_markers!(r)
     side = West
     should_stop = false
-    move_until_p!(r, Nord)
+    path = goto_corner!(r, OstNord)
     count = Int(move_until_p!(r, Ost))
     while !should_stop
         flag1 = isborder(r, Sud)
@@ -20,5 +20,8 @@ function count_markers!(r)
             side = HorizonSide(mod(Int(side) + 2, 4))
         end
     end
+    goto_corner!(r, OstNord)
+    inv_path = invert_path(path)
+    go_path!(r, inv_path)
     println(count)
 end
