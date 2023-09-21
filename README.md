@@ -22,7 +22,7 @@ then creating a HorizonSideRobots *Robot* instance
 r = Robot(animate=true)
 ```
 
-and then running the desired solution (e.g. mark perimeter)
+and then running the desired solution (e.g. FillField)
 
 ```julia
 fill_field!(r)
