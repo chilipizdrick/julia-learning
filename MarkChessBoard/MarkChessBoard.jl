@@ -2,24 +2,6 @@ using HorizonSideRobots
 include("../RobotUtils.jl")
 
 
-function mark_dotted_line!(r::Robot, side::HorizonSide; marker_flag = false)
-    while !isborder(r, side)
-        if marker_flag
-            putmarker!(r)
-        end
-        move!(r, side)
-
-        if marker_flag
-            marker_flag = false
-        else
-            marker_flag = true
-        end
-    end
-    if marker_flag
-        putmarker!(r)
-    end
-end
-
 function mark_chess_board!(r::Robot)
     path = goto_corner!(r, OstNord)
     if mod(length(path), 2) == 0

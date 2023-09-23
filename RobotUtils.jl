@@ -227,6 +227,24 @@ function count_steps_until_border!(r::Robot, side::HorizonSide)::Integer
     return count
 end
 
+function mark_dotted_line!(r::Robot, side::HorizonSide; marker_flag = false)
+    while !isborder(r, side)
+        if marker_flag
+            putmarker!(r)
+        end
+        move!(r, side)
+
+        if marker_flag
+            marker_flag = false
+        else
+            marker_flag = true
+        end
+    end
+    if marker_flag
+        putmarker!(r)
+    end
+end
+
 
 # Functions regarding straight movement
 
