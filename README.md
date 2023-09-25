@@ -1,29 +1,16 @@
 # julia-learning
-### A repository intended for studying julia and top-down programming approach in university.
+## **Очень важно, сначала прочтите, как запускать решения!**
 
-All problems regarding [HorizonSideRobots.jl](https://github.com/Vibof/HorizonSideRobots.jl) can be found in the corresponding folders.
+Все задачи, касающиеся [HorizonSideRobots.jl](https://github.com/Vibof/HorizonSideRobots.jl) могут быть найдены в папке *Problems*.
+Устаревшие решения могут быть найдены в папке *deprecated*.
 
-### Running solutions
-This can be easily done via including the cumulative file *include_all.jl* while being in the Julia REPL prompt
+### Запуск решений
+Решения используют обертку [*SmartRobot*]() над стандартным *Robot*
 
 ```julia
 include("include_all.jl")
-```
-
-or by including solutions one-by-one
-
-```julia
-include("FillField/FillField.jl")
-```
-
-then creating a HorizonSideRobots *Robot* instance
-
-```julia
-r = Robot(animate=true)
-```
-
-and then running the desired solution (e.g. FillField)
-
-```julia
+# or possibly
+# include("Problems/FillField.jl")
+r = SmartRobot()
 fill_field!(r)
 ```
