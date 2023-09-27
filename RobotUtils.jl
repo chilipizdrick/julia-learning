@@ -56,6 +56,49 @@ function mark_line!(sr::SmartRobot, direction::Union{HorizonSide,Diagonal})::Int
     return steps
 end
 
+function move_around_steps!(sr::SmartRobot, side::HorizonSide, steps::Integer)
+    while steps > 0
+        if isborder(sr, side)
+            result = avoid_obstacle!(sr, side, rotate(side))
+            if !result[1]
+                result = avoid_obstacle!(sr, side, invert(rotate(side)))
+            end
+            if !result[1]
+                println("[ERROR]: Could not avoid obstacle!")
+                break
+            end
+            steps -= result[2]
+        else
+            move!(sr, side)
+            steps -= 1
+        end
+    end
+end
+
+function avoid_obstacle!(sr::SmartRobot, moving_side::HorizonSide, avoiding_side::HorizonSide)::Tuple{Bool, Integer}
+    steps = 0
+    avoiding_steps = 0
+    while isborder(sr, moving_side) && !isborder(sr, avoiding_side)
+        move!(sr, avoiding_side)
+        avoiding_steps += 1
+    end
+    if isborder(sr, moving_side) && isborder(sr, avoiding_side)
+        for _ in 1:avoiding_steps
+            move!(sr, invert(avoiding_side))
+        end
+        return (false, 0)
+    else
+        move!(sr, moving_side)
+        steps += 1
+        while isborder(sr, invert(avoiding_side))
+            move!(sr, moving_side)
+            steps += 1
+        end
+        move_steps!(sr, invert(avoiding_side), avoiding_steps)
+    end
+    return (true, steps)
+end
+
 function move_to_corner!(sr::SmartRobot, corner::Diagonal)
     side_tuple = associate_diagonal(corner)
     while !is_corner(sr, corner)
