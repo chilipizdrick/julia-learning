@@ -56,6 +56,21 @@ function mark_line!(sr::SmartRobot, direction::Union{HorizonSide,Diagonal})::Int
     return steps
 end
 
+function mark_line_condition!(sr::SmartRobot, direction::Union{HorizonSide, Diagonal}, condition::Function)::Integer
+    steps = 0
+    if condition(sr)
+        putmarker!(sr)
+    end
+    while !isborder(sr, direction)
+        move!(sr, direction)
+        if condition(sr)
+            putmarker!(sr)
+        end
+        steps += 1
+    end
+    return steps       
+end
+
 function move_around_steps!(sr::SmartRobot, side::HorizonSide, steps::Integer)
     while steps > 0
         if isborder(sr, side)
