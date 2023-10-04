@@ -5,7 +5,7 @@
 Устаревшие решения могут быть найдены в папке *deprecated*.
 
 ### Запуск решений
-Решения используют обертку [*SmartRobot*]() над стандартным *Robot*
+Решения используют обертку [*SmartRobot*](https://github.com/chilipizdrick/julia-learning/blob/master/SmartRobot.jl) над стандартным *Robot*
 
 ```julia
 include("include_all.jl")

@@ -71,6 +71,29 @@ function mark_line_condition!(sr::SmartRobot, direction::Union{HorizonSide, Diag
     return steps       
 end
 
+function mark_snake_condition!(sr::SmartRobot, condition::Function)
+    corner = check_corner(sr)
+    if corner == WestSud
+        moving_side = Ost
+        border_side = Nord
+    elseif corner == SudOst
+        moving_side = West
+        border_side = Nord
+    elseif corner == OstNord
+        moving_side = West
+        border_side = Sud
+    else # if corner == NordWest
+        moving_side = West
+        border_side = Sud
+    end
+    while !isborder(sr, border_side)
+        mark_line_condition!(sr, moving_side, condition)
+        move!(sr, border_side)
+        moving_side = invert(moving_side)
+    end
+    mark_line_condition!(sr, moving_side, condition)
+end
+
 function move_around_steps!(sr::SmartRobot, side::HorizonSide, steps::Integer)
     while steps > 0
         if isborder(sr, side)
@@ -150,5 +173,13 @@ function mark_outer_perimeter_from_corner!(sr::SmartRobot, corner::Diagonal)
         putmarker!(r)
         mark_line!(sr, side)
         side = rotate(side)
+    end
+end
+
+function check_corner(sr::SmartRobot)::Diagonal
+    for diagonal in (Diagonal(i) for i in 0:3)
+        if all(isborder(sr, side) for side in associate_diagonal(diagonal))
+            return diagonal
+        end
     end
 end

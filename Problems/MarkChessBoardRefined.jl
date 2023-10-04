@@ -1,15 +1,13 @@
 include("../RobotUtils.jl")
 
 
-function four_points!(sr::SmartRobot)
+function mark_chess_board_refined!(sr::SmartRobot)
     sr.x = 0
     sr.y = 0
     sr.path = []
     move_to_corner!(sr, WestSud)
     path = copy(sr.path)
-    for side in (Ost, Nord, West, Sud)
-        mark_line_condition!(sr, side, robot_instance -> robot_instance.x == 0 || robot_instance.y == 0)
-    end
+    mark_snake_condition!(sr, robot_instance -> mod(robot_instance.x + robot_instance.y, 2) == 0)
     move_to_corner!(sr, WestSud)
     inv_path = invert(path)
     follow_path!(sr, inv_path)
