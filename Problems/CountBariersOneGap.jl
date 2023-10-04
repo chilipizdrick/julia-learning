@@ -25,7 +25,7 @@ function count_bariers!(sr::SmartRobot)::Integer
     return count
 end
 
-@enum State Gap = 0 Barier = 1 Border = 2 
+@enum State Gap = 0 Barier = 1 Border = 2 OneGapBarier = 3
 
 function count_bariers_in_line!(sr::SmartRobot, moving_side::HorizonSide, barier_side::HorizonSide)::Tuple
     count = 0
@@ -38,8 +38,18 @@ function count_bariers_in_line!(sr::SmartRobot, moving_side::HorizonSide, barier
         if state == Border || state == Barier
             move!(sr, moving_side)
             if !isborder(sr, barier_side)
+                state = OneGapBarier
+                if isborder(sr, moving_side)
+                    count += 1
+                end
+            end
+        elseif state == OneGapBarier
+            move!(sr, moving_side)
+            if !isborder(sr, barier_side)
                 state = Gap
                 count += 1
+            else
+                state = Barier
             end
         else # state == Gap
             move!(sr, moving_side)
