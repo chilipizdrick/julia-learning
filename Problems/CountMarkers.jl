@@ -26,7 +26,8 @@ function count_markers!(sr::SmartRobot)
     move_to_corner!(sr, WestSud)
     inv_path = invert(path)
     follow_path!(sr, inv_path)
-    println(count)
+    clear_data!(sr)
+    return count
 end
 
 function count_markers_in_line!(sr::SmartRobot, side::HorizonSide)::Integer

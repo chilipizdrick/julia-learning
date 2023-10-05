@@ -2,7 +2,6 @@ include("../RobotUtils.jl")
 
 
 function mark_big_chess_board!(sr::SmartRobot, scale::Integer)
-    sr.path = []
     move_to_corner!(sr, WestSud)
     sr.x = 0
     sr.y = 0
@@ -17,4 +16,5 @@ function mark_big_chess_board!(sr::SmartRobot, scale::Integer)
     move_to_corner!(sr, WestSud)
     inv_path = invert(path)
     follow_path!(sr, inv_path)
+    clear_data!(sr)
 end

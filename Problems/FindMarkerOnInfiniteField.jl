@@ -2,9 +2,6 @@ include("../RobotUtils.jl")
 
 
 function find_marker_on_infinite_field!(sr::SmartRobot)
-    sr.path = []
-    sr.x = 0
-    sr.y = 0
     count = 1
     side = Ost
     is_marker = false
@@ -19,6 +16,7 @@ function find_marker_on_infinite_field!(sr::SmartRobot)
         side = rotate(side)
         count += 1
     end
+    clear_data!(sr)
 end
 
 function move_until_marker_straight!(sr::SmartRobot, side::HorizonSide, steps::Integer)::Bool

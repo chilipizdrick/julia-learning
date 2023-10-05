@@ -2,9 +2,6 @@ include("../RobotUtils.jl")
 
 
 function average_marked_temperature!(sr::SmartRobot)::Number
-    sr.path = []
-    sr.x = 0
-    sr.y = 0
     temperature_sum = 0
     marker_count = 0
     move_to_corner!(sr, WestSud)
@@ -24,6 +21,7 @@ function average_marked_temperature!(sr::SmartRobot)::Number
     move_to_corner!(sr, WestSud)
     inv_path = invert(path)
     follow_path!(sr, inv_path)
+    clear_data!(sr)
 
     return temperature_sum / marker_count
 end

@@ -2,9 +2,6 @@ include("../RobotUtils.jl")
 
 
 function count_bariers!(sr::SmartRobot)::Integer
-    sr.x = 0
-    sr.y = 0
-    sr.path = []
     move_to_corner!(sr, WestSud)
     path = copy(sr.path)
     count = 0
@@ -22,6 +19,7 @@ function count_bariers!(sr::SmartRobot)::Integer
     move_to_corner!(sr, WestSud)
     inv_path = invert(path)
     follow_path!(sr, inv_path)
+    clear_data!(sr)
     return count
 end
 

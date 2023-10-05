@@ -2,9 +2,6 @@ include("../RobotUtils.jl")
 
 
 function four_points!(sr::SmartRobot)
-    sr.x = 0
-    sr.y = 0
-    sr.path = []
     move_to_corner!(sr, WestSud)
     path = copy(sr.path)
     for side in (Ost, Nord, West, Sud)
@@ -13,4 +10,5 @@ function four_points!(sr::SmartRobot)
     move_to_corner!(sr, WestSud)
     inv_path = invert(path)
     follow_path!(sr, inv_path)
+    clear_data!(sr)
 end

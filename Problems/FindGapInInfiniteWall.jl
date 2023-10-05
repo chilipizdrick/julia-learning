@@ -2,9 +2,6 @@ include("../RobotUtils.jl")
 
 
 function find_gap_in_infinite_wall!(sr::SmartRobot)
-    sr.path = []
-    sr.x = 0
-    sr.y = 0
     count = 1
     border_side = check_border(sr)
 
@@ -33,6 +30,7 @@ function find_gap_in_infinite_wall!(sr::SmartRobot)
     end
     move!(sr, border_side)
     move_steps!(sr, invert(side), count)
+    clear_data!(sr)
 end
 
 """

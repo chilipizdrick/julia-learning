@@ -1,10 +1,7 @@
 include("../RobotUtils.jl")
 
 
-function count_bariers!(sr::SmartRobot)::Integer
-    sr.x = 0
-    sr.y = 0
-    sr.path = []
+function count_bariers_one_gap!(sr::SmartRobot)::Integer
     move_to_corner!(sr, WestSud)
     path = copy(sr.path)
     count = 0
@@ -12,7 +9,7 @@ function count_bariers!(sr::SmartRobot)::Integer
     side = Ost
     should_stop_flag = false
     while !should_stop_flag
-        (increment, should_stop_flag) = count_bariers_in_line!(sr, side, barier_side)
+        (increment, should_stop_flag) = count_bariers_in_line_one_gap!(sr, side, barier_side)
         count += increment
         if !should_stop_flag
             side = invert(side)
@@ -22,12 +19,13 @@ function count_bariers!(sr::SmartRobot)::Integer
     move_to_corner!(sr, WestSud)
     inv_path = invert(path)
     follow_path!(sr, inv_path)
+    clear_data!(sr)
     return count
 end
 
 @enum State Gap = 0 Barier = 1 Border = 2 OneGapBarier = 3
 
-function count_bariers_in_line!(sr::SmartRobot, moving_side::HorizonSide, barier_side::HorizonSide)::Tuple
+function count_bariers_in_line_one_gap!(sr::SmartRobot, moving_side::HorizonSide, barier_side::HorizonSide)::Tuple
     count = 0
     if isborder(sr, barier_side)
         state = Border

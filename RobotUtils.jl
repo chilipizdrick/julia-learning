@@ -102,7 +102,7 @@ function move_around_steps!(sr::SmartRobot, side::HorizonSide, steps::Integer)
                 result = avoid_obstacle!(sr, side, invert(rotate(side)))
             end
             if !result[1]
-                println("[ERROR]: Could not avoid obstacle!")
+                println("[WARNING]: Could not avoid obstacle!")
                 break
             end
             steps -= result[2]
@@ -170,7 +170,7 @@ function mark_outer_perimeter_from_corner!(sr::SmartRobot, corner::Diagonal)
     side_tuple = associate_diagonal(corner)
     side = side_tuple[2]
     for _ in 0:4
-        putmarker!(r)
+        putmarker!(sr)
         mark_line!(sr, side)
         side = rotate(side)
     end

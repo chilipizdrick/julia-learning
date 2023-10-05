@@ -2,10 +2,7 @@ include("../RobotUtils.jl")
 
 
 function fill_field!(sr::SmartRobot)
-    sr.path = []
-    sr.x = 0
-    sr.y = 0
-    move_to_corner!(r, WestSud)
+    move_to_corner!(sr, WestSud)
     path = copy(sr.path)
     side = Ost
     while !isborder(sr, Nord)
@@ -17,4 +14,5 @@ function fill_field!(sr::SmartRobot)
     move_to_corner!(sr, WestSud)
     inv_path = invert(path)
     follow_path!(sr, inv_path)
+    clear_data!(sr)
 end

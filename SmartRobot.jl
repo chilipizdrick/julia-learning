@@ -9,8 +9,12 @@ mutable struct SmartRobot
     path::Vector{Tuple{HorizonSide,Int64}}
 end
 
-function SmartRobot(; field_length=10, field_height=10)::SmartRobot
-    return SmartRobot(Robot(animate=true, field_height, field_length), 0, 0, [])
+function SmartRobot(;animate=true, file_name=nothing, field_length=10, field_height=10)::SmartRobot
+    if !isa(file_name, Nothing)
+        return SmartRobot(Robot(file_name; animate=animate), 0, 0, [])
+    else
+        return SmartRobot(Robot(animate=animate, field_height, field_length), 0, 0, [])
+    end
 end
 
 
@@ -87,4 +91,10 @@ end
 
 function temperature(sr::SmartRobot)::Integer
     return HorizonSideRobots.temperature(sr.robot)
+end
+
+function clear_data!(sr::SmartRobot)
+    sr.x = 0
+    sr.y = 0
+    sr.path = []
 end
