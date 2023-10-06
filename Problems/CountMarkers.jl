@@ -7,7 +7,7 @@ function count_markers!(sr::SmartRobot)
     sr.y = 0
     side = Ost
     should_stop = false
-    move_to_corner!(r, WestSud)
+    move_to_corner!(sr, WestSud)
     path = copy(sr.path)
     count = Int(ismarker(sr))
     while !should_stop

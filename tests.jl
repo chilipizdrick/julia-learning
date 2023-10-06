@@ -1,4 +1,4 @@
-using Test
+using Test, PyPlot
 using HorizonSideRobots.SituationDatas
 include.(filter(contains(r".jl$"), readdir("Problems/"; join=true)))
 
@@ -131,6 +131,50 @@ end
         output_file_path = "test_cases/count_bariers_one_gap/case$case/output.sit"
         sr = SmartRobot(;file_name=input_file_path, animate=ANIMATE_FLAG)
         @test count_bariers_one_gap!(sr) == 12
+        HorizonSideRobots.SituationDatas.save(sr.robot.situation, "test.sit")
+        @test open(io -> read(io, String), "test.sit") == open(io -> read(io, String), output_file_path)
+    end
+end
+
+@testset "average_marked_temperature" begin
+    for case in 1:length(readdir("test_cases/average_marked_temperature"))
+        input_file_path = "test_cases/average_marked_temperature/case$case/input.sit"
+        output_file_path = "test_cases/average_marked_temperature/case$case/output.sit"
+        sr = SmartRobot(;file_name=input_file_path, animate=ANIMATE_FLAG)
+        @test average_marked_temperature!(sr) == 55.57142857142857
+        HorizonSideRobots.SituationDatas.save(sr.robot.situation, "test.sit")
+        @test open(io -> read(io, String), "test.sit") == open(io -> read(io, String), output_file_path)
+    end
+end
+
+@testset "count_markers" begin
+    for case in 1:length(readdir("test_cases/count_markers"))
+        input_file_path = "test_cases/count_markers/case$case/input.sit"
+        output_file_path = "test_cases/count_markers/case$case/output.sit"
+        sr = SmartRobot(;file_name=input_file_path, animate=ANIMATE_FLAG)
+        @test count_markers!(sr) == 19
+        HorizonSideRobots.SituationDatas.save(sr.robot.situation, "test.sit")
+        @test open(io -> read(io, String), "test.sit") == open(io -> read(io, String), output_file_path)
+    end
+end
+
+@testset "stairs" begin
+    for case in 1:length(readdir("test_cases/stairs"))
+        input_file_path = "test_cases/stairs/case$case/input.sit"
+        output_file_path = "test_cases/stairs/case$case/output.sit"
+        sr = SmartRobot(;file_name=input_file_path, animate=ANIMATE_FLAG)
+        stairs!(sr)
+        HorizonSideRobots.SituationDatas.save(sr.robot.situation, "test.sit")
+        @test open(io -> read(io, String), "test.sit") == open(io -> read(io, String), output_file_path)
+    end
+end
+
+@testset "put_markers_in_corners" begin
+    for case in 1:length(readdir("test_cases/put_markers_in_corners"))
+        input_file_path = "test_cases/put_markers_in_corners/case$case/input.sit"
+        output_file_path = "test_cases/put_markers_in_corners/case$case/output.sit"
+        sr = SmartRobot(;file_name=input_file_path, animate=ANIMATE_FLAG)
+        put_markers_in_corners!(sr)
         HorizonSideRobots.SituationDatas.save(sr.robot.situation, "test.sit")
         @test open(io -> read(io, String), "test.sit") == open(io -> read(io, String), output_file_path)
     end
