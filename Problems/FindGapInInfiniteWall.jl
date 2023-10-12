@@ -2,34 +2,17 @@ include("../RobotUtils.jl")
 
 
 function find_gap_in_infinite_wall!(sr::SmartRobot)
-    count = 1
     border_side = check_border(sr)
-
     if border_side == Ost || border_side == West
         side = Nord
     else # if border_side == Nord || border_side == Sud
         side = Ost
     end
-    while true
-        move_steps!(sr, side, count)
-        if !isborder(sr, border_side)
-            break
-        end
-        move_steps!(sr, invert(side), count)
-
-        side = invert(side)
-
-        move_steps!(sr, side, count)
-        if !isborder(sr, border_side)
-            break
-        end
-        move_steps!(sr, invert(side), count)
-
-        side = invert(side)
-        count += 1
-    end
+    mark_shutle_condition!(sr, side, (r) -> false, (r) -> !isborder(r, border_side))
     move!(sr, border_side)
-    move_steps!(sr, invert(side), count)
+    path = copy(sr.path)
+    inv_path = invert(path)
+    move_steps!(sr, inv_path[2][1], div(inv_path[2][2], 2))
     clear_data!(sr)
 end
 

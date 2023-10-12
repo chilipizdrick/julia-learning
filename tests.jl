@@ -114,7 +114,7 @@ end
         input_file_path = "test_cases/mark_chess_board/case$case/input.sit"
         output_file_path = "test_cases/mark_chess_board/case$case/output.sit"
         sr = SmartRobot(;file_name=input_file_path, animate=ANIMATE_FLAG)
-        mark_chess_board_refined!(sr)
+        mark_chess_board!(sr)
         HorizonSideRobots.SituationDatas.save(sr.robot.situation, "test.sit")
         if COMPARE_SIT_FILES_FLAG
             @test open(io -> read(io, String), "test.sit") == open(io -> read(io, String), output_file_path)
