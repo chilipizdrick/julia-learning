@@ -2,7 +2,7 @@ using Test
 using HorizonSideRobots.SituationDatas
 include.(filter(contains(r".jl$"), readdir("Problems/"; join=true)))
 
-global ANIMATE_FLAG = true
+global ANIMATE_FLAG = false
 global COMPARE_SIT_FILES_FLAG = false
 
 @testset "straight_cross" begin
