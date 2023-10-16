@@ -31,7 +31,12 @@ end
 
 # Higher order functions
 
-function mark_line_condition!(sr::SmartRobot, direction::Union{HorizonSide,Diagonal}, mark_condition::Function, stop_condition::Function)::Integer
+function mark_line_condition!(
+    sr::SmartRobot,
+    direction::Union{HorizonSide,Diagonal},
+    mark_condition::Function,
+    stop_condition::Function
+)::Integer
     steps = 0
     if mark_condition(sr)
         putmarker!(sr)
@@ -49,7 +54,13 @@ function mark_line_condition!(sr::SmartRobot, direction::Union{HorizonSide,Diago
     return steps
 end
 
-function mark_line_steps_condition!(sr::SmartRobot, direction::Union{HorizonSide,Diagonal}, steps::Integer, mark_condition::Function, stop_condition::Function)
+function mark_line_steps_condition!(
+    sr::SmartRobot,
+    direction::Union{HorizonSide,Diagonal},
+    steps::Integer,
+    mark_condition::Function,
+    stop_condition::Function
+)
     if mark_condition(sr)
         putmarker!(sr)
     end
@@ -64,7 +75,11 @@ function mark_line_steps_condition!(sr::SmartRobot, direction::Union{HorizonSide
     end
 end
 
-function mark_shutle_condition!(sr::SmartRobot, direction::Union{HorizonSide,Diagonal}, mark_condition::Function, stop_condition::Function)
+function mark_shutle_condition!(sr::SmartRobot,
+    direction::Union{HorizonSide,Diagonal},
+    mark_condition::Function,
+    stop_condition::Function
+)
     side = direction
     steps = 0
     while !stop_condition(sr)
@@ -82,7 +97,12 @@ function mark_shutle_condition!(sr::SmartRobot, direction::Union{HorizonSide,Dia
     end
 end
 
-function mark_snake_condition!(sr::SmartRobot, moving_side::HorizonSide, ortogonal_side::HorizonSide, mark_condition::Function, stop_condition::Function)
+function mark_snake_condition!(sr::SmartRobot,
+    moving_side::HorizonSide,
+    ortogonal_side::HorizonSide,
+    mark_condition::Function,
+    stop_condition::Function
+)
     while !isborder(sr, ortogonal_side)
         mark_line_condition!(sr, moving_side, mark_condition, (r) -> isborder(r, moving_side))
         try_move!(sr, ortogonal_side)
@@ -91,7 +111,11 @@ function mark_snake_condition!(sr::SmartRobot, moving_side::HorizonSide, ortogon
     mark_line_condition!(sr, moving_side, mark_condition, (r) -> isborder(r, moving_side))
 end
 
-function mark_spiral_condition!(sr::SmartRobot, moving_side::HorizonSide, mark_condition::Function, stop_condition::Function)
+function mark_spiral_condition!(sr::SmartRobot,
+    moving_side::HorizonSide,
+    mark_condition::Function,
+    stop_condition::Function
+)
     steps = 0
     while !stop_condition(sr)
         steps += 1
@@ -149,7 +173,10 @@ function move_around_steps!(sr::SmartRobot, side::HorizonSide, steps::Integer)
     end
 end
 
-function avoid_obstacle!(sr::SmartRobot, moving_side::HorizonSide, avoiding_side::HorizonSide)::Tuple{Bool,Integer}
+function avoid_obstacle!(sr::SmartRobot,
+    moving_side::HorizonSide,
+    avoiding_side::HorizonSide
+)::Tuple{Bool,Integer}
     steps = 0
     avoiding_steps = 0
     while isborder(sr, moving_side) && !isborder(sr, avoiding_side)

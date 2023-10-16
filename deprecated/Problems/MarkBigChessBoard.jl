@@ -14,6 +14,7 @@ function mark_big_chess_board!(sr::SmartRobot, scale::Integer)
         !(mod(r.x, scale * 2) < scale || 
         mod(r.y, scale * 2) < scale)
     end
+
     mark_snake_condition!(sr, moving_side, ortogonal_side, mark_condition, (r) -> false)
     move_to_corner!(sr, WestSud)
     inv_path = invert(path)
