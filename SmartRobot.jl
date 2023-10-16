@@ -7,13 +7,16 @@ mutable struct SmartRobot
     x::Int64
     y::Int64
     path::Vector{Tuple{HorizonSide,Int64}}
+    marker_count::Int64
 end
 
 function SmartRobot(;animate=true, file_name=nothing, field_length=10, field_height=10)::SmartRobot
     if !isa(file_name, Nothing)
-        return SmartRobot(Robot(file_name; animate=animate), 0, 0, [])
+        _robot = Robot(file_name; animate=animate)
+        return SmartRobot(_robot, 0, 0, [], HorizonSideRobots.ismarker(_robot))
     else
-        return SmartRobot(Robot(animate=animate, field_height, field_length), 0, 0, [])
+        _robot = Robot(animate=animate, field_height, field_length)
+        return SmartRobot(_robot, 0, 0, [], HorizonSideRobots.ismarker(_robot))
     end
 end
 
@@ -23,6 +26,10 @@ function move!(sr::SmartRobot, direction)
 
     if isa(direction, HorizonSide)
         HorizonSideRobots.move!(sr.robot, direction)
+
+        if ismarker(sr)
+            sr.marker_count += 1
+        end
 
         if direction == Ost
             sr.x += 1
@@ -43,8 +50,16 @@ function move!(sr::SmartRobot, direction)
 
     if isa(direction, Diagonal)
         side_tuple = associate_diagonal(direction)
+
         HorizonSideRobots.move!(sr.robot, side_tuple[1])
+        if ismarker(sr)
+            sr.marker_count += 1
+        end
+
         HorizonSideRobots.move!(sr.robot, side_tuple[2])
+        if ismarker(sr)
+            sr.marker_count += 1
+        end
 
         if direction == OstNord
             sr.x += 1
@@ -97,4 +112,5 @@ function clear_data!(sr::SmartRobot)
     sr.x = 0
     sr.y = 0
     sr.path = []
+    sr.marker_count = 0
 end
