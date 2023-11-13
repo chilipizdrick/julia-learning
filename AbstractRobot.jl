@@ -38,16 +38,17 @@ Base.:(==)(a::Coordinates, b::Coordinates) = a.x == b.x && a.y == b.y
 Base.:(!=)(a::Coordinates, b::Coordinates) = a.x != b.x || a.y != b.y
 
 getcoord(ar::AbstractRobot)::Coordinates = ar.coord
-function update_coord!(coord::Coordinates, side::HorizonSide)
+function update_coord!(ar::AbstractRobot, side::HorizonSide)
     lookup_table = Dict(
         Nord => (0, 1),
         Sud => (0, -1),
         Ost => (1, 0),
         West => (-1, 0)
     )
-    coord.x += lookup_table[side][1]
-    coord.y += lookup_table[side][2]
+    ar.coord.x += lookup_table[side][1]
+    ar.coord.y += lookup_table[side][2]
 end
+copy(c::Coordinates) = Coordinates(c.x, c.y)
 
 
 mutable struct Path
@@ -55,12 +56,12 @@ mutable struct Path
 end
 
 getpath(ar::AbstractRobot) = ar.path
-function update_path!(path::Path, side::HorizonSide)
-    if length(path.path) > 0 && last(path.path)[1] == side
-        last_move = path.path[end]
-        path.path[end] = (last_move[1], last_move[2] + 1)
+function update_path!(ar::AbstractRobot, side::HorizonSide)
+    if length(ar.path.path) > 0 && last(ar.path.path)[1] == side
+        last_move = ar.path.path[end]
+        ar.path.path[end] = (last_move[1], last_move[2] + 1)
     else
-        push!(path.path, (side, 1))
+        push!(ar.path.path, (side, 1))
     end
 end
 copy(path::Path) = Path(Base.copy(path.path))

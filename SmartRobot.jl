@@ -38,8 +38,8 @@ end
 
 function move!(sr::SmartRobot, side::HorizonSide)
     HSR.move!(get_baserobot(sr), side)
-    update_coord!(sr.coord, side)
-    update_path!(sr.path, side)
+    update_coord!(sr, side)
+    update_path!(sr, side)
     update_marker_count!(sr)
 end
 
@@ -47,8 +47,8 @@ function move!(sr::SmartRobot, diagonal::Diagonal)
     side_tuple = associate_diagonal(diagonal)
     for side in side_tuple
         HSR.move!(get_baserobot(sr), side)
-        update_coord!(sr.coord, side)
-        update_path!(sr.path, side)
+        update_coord!(sr, side)
+        update_path!(sr, side)
         update_marker_count!(sr)
     end
 end
@@ -58,6 +58,12 @@ function isborder(sr::SmartRobot, diagonal::Diagonal)::Bool
     side_tuple = associate_diagonal(diagonal)
     return HSR.isborder(get_baserobot(sr), side_tuple[1]) ||
            HSR.isborder(get_baserobot(sr), side_tuple[2])
+end
+
+
+function putmarker!(sr::SmartRobot)
+    HSR.putmarker!(get_baserobot(sr))
+    update_marker_count!(sr)
 end
 
 

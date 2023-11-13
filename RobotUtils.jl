@@ -1,9 +1,91 @@
 include("AbstractRobot.jl")
 include("SmartRobot.jl")
+include("AreaRobot.jl")
 
 
 rotate(side::HorizonSide) = HorizonSide(mod(Int(side) + 1, 4))
 rotate(diagonal::Diagonal) = Diagonal(mod(Int(diagonal) + 1, 4))
+
+rotate_clockwise(side::HorizonSide) = HorizonSide(mod(Int(side) - 1, 4))
+
+
+"""
+This function follows the conture and returns robot into its initial position.
+Robot moves following left border relative to its movement direction. 
+The function assumes that the robot is located near the border.
+"""
+function follow_conture!(ar::AbstractRobot)
+    border_list = check_borders(ar)
+    if length(border_list) == 2 && Int(border_list[1]) - Int(border_list[2]) == 2
+        for last_move in (rotate_clockwise(check_borders(ar)[i]) for i in (1, 2))
+            # println("[PSEUDO LAST MOVE]: $last_move -> ($(getcoord(ar).x), $(getcoord(ar).y))")
+            follow_conture_logic!(ar, last_move)
+        end
+    else
+        last_move = rotate_clockwise(check_borders(ar)[1])
+        # println("[PSEUDO LAST MOVE]: $last_move -> ($(getcoord(ar).x), $(getcoord(ar).y))")
+        follow_conture_logic!(ar, last_move)
+    end
+end
+
+function follow_conture_logic!(ar::AbstractRobot, last_move::HorizonSide)
+    # move_count = 0
+    # println("[MOVE #$move_count]")
+    # putmarker!(ar)
+    initial_coord = copy(getcoord(ar))
+    # println("[INITIAL COORDINATES]: $initial_coord")
+    cur_move = pick_next_move(ar, last_move)
+    # println("[CURRENT MOVE]: ($(getcoord(ar).x), $(getcoord(ar).y)) -> $cur_move")
+    move!(ar, cur_move)
+    last_move = cur_move
+    # println("")
+    while getcoord(ar) != initial_coord
+        # sleep(0.25)
+        # move_count += 1
+        # println("[MOVE #$move_count]")
+        # putmarker!(ar)
+        # println("[LAST MOVE]: $last_move -> ($(getcoord(ar).x), $(getcoord(ar).y))")
+        cur_move = pick_next_move(ar, last_move)
+        # println("[CURRENT MOVE]: ($(getcoord(ar).x), $(getcoord(ar).y)) -> $cur_move")
+        last_move = cur_move
+        move!(ar, cur_move)
+        # println("")
+    end
+end
+
+function pick_next_move(ar::AbstractRobot, last_move::HorizonSide)::HorizonSide
+    cur_side = rotate(last_move)
+    while isborder(ar, cur_side)
+        cur_side = rotate_clockwise(cur_side)
+    end
+    return cur_side
+end
+
+function check_borders(ar::AbstractRobot)::Vector{HorizonSide}
+    result = []
+    for side in (Ost, Nord, West, Sud)
+        if isborder(ar, side)
+            push!(result, side)
+        end
+    end
+    return result
+end
+
+
+"""
+Calculates area of an enclosed conture. Returns positive value if it 
+is measured from outside. Returns negative value otherwise. The absolute value 
+is always equal to the area of the measured conture.
+"""
+function calculate_area_determinant!(ar::AreaRobot, border_side::HorizonSide)::Int64
+    num_steps = move_until!(ar, border_side)
+    clear_data!(ar)
+    set_calc_area_flag!(ar, true)
+    follow_conture!(ar)
+    set_calc_area_flag!(ar, false)
+    move_steps!(ar, invert(border_side), num_steps)
+    return getarea(ar)
+end
 
 
 # Higher order functions
