@@ -5,7 +5,6 @@ include("AreaRobot.jl")
 
 rotate(side::HorizonSide) = HorizonSide(mod(Int(side) + 1, 4))
 rotate(diagonal::Diagonal) = Diagonal(mod(Int(diagonal) + 1, 4))
-
 rotate_clockwise(side::HorizonSide) = HorizonSide(mod(Int(side) - 1, 4))
 
 
@@ -15,41 +14,21 @@ Robot moves following left border relative to its movement direction.
 The function assumes that the robot is located near the border.
 """
 function follow_conture!(ar::AbstractRobot)
-    border_list = check_borders(ar)
-    if length(border_list) == 2 && Int(border_list[1]) - Int(border_list[2]) == 2
-        for last_move in (rotate_clockwise(check_borders(ar)[i]) for i in (1, 2))
-            # println("[PSEUDO LAST MOVE]: $last_move -> ($(getcoord(ar).x), $(getcoord(ar).y))")
-            follow_conture_logic!(ar, last_move)
-        end
-    else
-        last_move = rotate_clockwise(check_borders(ar)[1])
-        # println("[PSEUDO LAST MOVE]: $last_move -> ($(getcoord(ar).x), $(getcoord(ar).y))")
-        follow_conture_logic!(ar, last_move)
-    end
-end
-
-function follow_conture_logic!(ar::AbstractRobot, last_move::HorizonSide)
-    # move_count = 0
-    # println("[MOVE #$move_count]")
-    # putmarker!(ar)
+    last_move = rotate_clockwise(check_borders(ar)[1])
     initial_coord = copy(getcoord(ar))
-    # println("[INITIAL COORDINATES]: $initial_coord")
+    
     cur_move = pick_next_move(ar, last_move)
-    # println("[CURRENT MOVE]: ($(getcoord(ar).x), $(getcoord(ar).y)) -> $cur_move")
+    initial_move = deepcopy(cur_move)
+    
     move!(ar, cur_move)
     last_move = cur_move
-    # println("")
-    while getcoord(ar) != initial_coord
-        # sleep(0.25)
-        # move_count += 1
-        # println("[MOVE #$move_count]")
-        # putmarker!(ar)
-        # println("[LAST MOVE]: $last_move -> ($(getcoord(ar).x), $(getcoord(ar).y))")
+
+    while getcoord(ar) != initial_coord || 
+        pick_next_move(ar, last_move) != initial_move
+
         cur_move = pick_next_move(ar, last_move)
-        # println("[CURRENT MOVE]: ($(getcoord(ar).x), $(getcoord(ar).y)) -> $cur_move")
-        last_move = cur_move
         move!(ar, cur_move)
-        # println("")
+        last_move = cur_move
     end
 end
 

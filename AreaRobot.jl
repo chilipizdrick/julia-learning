@@ -28,21 +28,40 @@ end
 
 set_calc_area_flag!(ar::AreaRobot, flag::Bool) = ar.calc_area_flag = flag
 getarea(ar::AreaRobot)::Int64 = ar.cur_area
+
+"""
+This function uses relative border and movement positions as well as a set of 
+already checked borders to determine wether to increment or decrement the area.
+"""
 function update_area!(ar::AreaRobot, side::HorizonSide)
-    if isborder(ar, Sud) && !((ar.coord.x, ar.coord.y, Sud) in ar.checked_borders_set)
-        ar.cur_area += ar.coord.y
-        push!(ar.checked_borders_set, (ar.coord.x, ar.coord.y, Sud))
-    end
-    if isborder(ar, Nord) && !((ar.coord.x, ar.coord.y, Nord) in ar.checked_borders_set)
-        ar.cur_area -= (ar.coord.y + 1)
-        push!(ar.checked_borders_set, (ar.coord.x, ar.coord.y, Nord))
+    rotate(side::HorizonSide) = HorizonSide(mod(Int(side) + 1, 4))
+    if isborder(ar, rotate(side))
+        if isborder(ar, Sud) &&
+            !((ar.coord.x, ar.coord.y, Sud) in ar.checked_borders_set) &&
+            side in (West, Sud)
+
+            ar.cur_area += ar.coord.y
+            push!(ar.checked_borders_set, (ar.coord.x, ar.coord.y, Sud))
+        end
+        if isborder(ar, Nord) &&
+            !((ar.coord.x, ar.coord.y, Nord) in ar.checked_borders_set) && 
+            side in (Ost, Nord)
+
+            ar.cur_area -= (ar.coord.y + 1)
+            push!(ar.checked_borders_set, (ar.coord.x, ar.coord.y, Nord))
+        end
     end
 end
 
 function move!(ar::AreaRobot, side::HorizonSide)
+    if ar.calc_area_flag
+        update_area!(ar, side)
+    end
     HSR.move!(get_baserobot(ar), side)
     update_coord!(ar, side)
-    update_area!(ar, side)
+    if ar.calc_area_flag
+        update_area!(ar, side)
+    end
 end
 
 
