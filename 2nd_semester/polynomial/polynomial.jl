@@ -134,7 +134,6 @@ function Base.:(*)(a::T, p::Polynomial{T})::Polynomial{T} where {T}
     return Polynomial{T}(p.coeffs .* a)
 end
 
-# Fix this
 function Base.divrem(p::Polynomial{T}, q::Polynomial{T})::Tuple{Polynomial{T},Polynomial{T}} where {T}
     if q == Polynomial{T}()
         throw(ErrorException("polynomial division by 0-polynomial"))
@@ -144,7 +143,6 @@ function Base.divrem(p::Polynomial{T}, q::Polynomial{T})::Tuple{Polynomial{T},Po
     remainder = copy(p)
 
     while remainder != Polynomial{T}() && ord(remainder) >= ord(q)
-        # Divide the leading terms (remainder / q)
         coeffs = Vector{T}()
         power = ord(remainder) - ord(q)
         for _ in 1:power
@@ -172,37 +170,47 @@ function Base.:(%)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
     return (divrem(p, q))[2]
 end
 
-# function (p::Polynomial{T})(x::T)::T where {T}
-# end
-
-# function valdiff(p::Polynomial{T}, x::T) where {T}
-# end
-
-function value(p::Polynomial{T}, arg::T)::T where {T}
-    res = zero(T)
-    for i in eachindex(p.coeffs)
-        res += arg^(i - 1) * T(p.coeffs[i])
+function (p::Polynomial{T})(x) where {T}
+    if length(p.coeffs) == 1
+        return p.coeffs[1]
     end
+
+    res = 0
+    for i in lastindex(p.coeffs):-1:1
+        res = res * x + p.coeffs[i]
+    end
+
     return res
 end
 
-function differentiate(p::Polynomial{T})::Polynomial{T} where {T}
-    if ord(p) < 1
-        return Polynomial{T}(zero(T))
+function valdiff(p::Polynomial{T}, x::T) where {T}
+    res, diffres = zero(T), zero(T)
+    for i in lastindex(p.coeffs):-1:2
+        res = res*x + p.coeffs[i]
+        diffres = diffres*x + (i-1)*p.coeffs[i]
     end
+    res = res*x + p.coeffs[1]
 
-    coeffs = Vector{T}()
-    for i in 2:length(p.coeffs)
-        append!(coeffs, (i - 1) * p.coeffs[i])
-    end
-
-    return Polynomial{T}(coeffs)
+    return (res, diffres)
 end
 
-function derivative(p::Polynomial{T}, arg::T)::T where {T}
-    dp = differentiate(p)
-    return value(dp, arg)
-end
+# function differentiate(p::Polynomial{T})::Polynomial{T} where {T}
+#     if ord(p) < 1
+#         return Polynomial{T}(zero(T))
+#     end
+
+#     coeffs = Vector{T}()
+#     for i in 2:length(p.coeffs)
+#         append!(coeffs, (i - 1) * p.coeffs[i])
+#     end
+
+#     return Polynomial{T}(coeffs)
+# end
+
+# function derivative(p::Polynomial{T}, arg::T)::T where {T}
+#     dp = differentiate(p)
+#     return value(dp, arg)
+# end
 
 function Base.display(p::Polynomial{T})::String where {T}
     res = ""
@@ -222,12 +230,3 @@ function Base.display(p::Polynomial{T})::String where {T}
     println(res)
     return res
 end
-
-# function display!(p::Polynomial{T})::String where {T}
-#     res = display(p)
-#     println(res)
-#     return res
-# end
-
-# p = Polynomial{Int64}([1, 2, 3, 4, 5])
-# q = Polynomial{Int64}([-1, 2, -3])

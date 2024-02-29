@@ -51,16 +51,16 @@ end
     @test Polynomial{Float64}([2.0, 0.0, 6.0, 0.0, 1.0]) % Polynomial{Float64}([5.0, 0.0, 1.0]) == Polynomial{Float64}([-3.0])
 end
 
-@testset "Value" begin
-    @test value(Polynomial{Int64}([0, 2, 3, 5]), 0) == 0
-    @test value(Polynomial{Int64}([0, 2, 3, 5]), 1) == 10
-    @test value(Polynomial{Int64}([0, 2, 3, 5]), 2) == 56
+@testset "Val" begin
+    @test Polynomial{Int64}([0, 2, 3, 5])(0) == 0
+    @test Polynomial{Int64}([0, 2, 3, 5])(1) == 10
+    @test Polynomial{Int64}([0, 2, 3, 5])(2) == 56
 end
 
-@testset "Derivative" begin
-    @test derivative(Polynomial{Int64}([0, 2, 3, 5]), 0) == value(Polynomial{Int64}([2, 6, 15]), 0)
-    @test derivative(Polynomial{Int64}([0, 2, 3, 5]), 1) == value(Polynomial{Int64}([2, 6, 15]), 1)
-    @test derivative(Polynomial{Int64}([0, 2, 3, 5]), 2) == value(Polynomial{Int64}([2, 6, 15]), 2)
+@testset "Valdiff" begin
+    @test valdiff(Polynomial{Int64}([1, 2, 3, 4, 5]), 0) == (1, 2)
+    @test valdiff(Polynomial{Int64}([1, 2, 3, 4, 5]), 1) == (15, 40)
+    @test valdiff(Polynomial{Int64}([1, 2, 3, 4, 5]), 2) == (129, 222)
 end
 
 @testset "Display" begin
