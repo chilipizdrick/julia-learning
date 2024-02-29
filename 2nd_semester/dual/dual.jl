@@ -2,8 +2,12 @@ struct Dual{T}
     a::T
     b::T
 
-    function Dual{T}(a::T, b::T) where {T}
+    function Dual{T}(a::T, b::T)::Dual{T} where {T}
         return new{T}(a, b)
+    end
+
+    function Dual{T}()::Dual{T} where {T}
+        return new{T}(0, 0)
     end
 end
 
@@ -17,7 +21,7 @@ end
 
 function Base.:(!=)(d::Dual{T}, e::Dual{T})::Bool where {T}
     return d.a != e.a || d.b != e.b
-end
+end 
 
 function conj(d::Dual{T})::Dual{T} where {T}
     return Dual{T}(d.a, -d.b)

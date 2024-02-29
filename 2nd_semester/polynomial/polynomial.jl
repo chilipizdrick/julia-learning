@@ -1,4 +1,6 @@
-struct Polynomial{T}
+abstract type AbstractPolynomial <: Number end
+
+struct Polynomial{T} <: AbstractPolynomial
     coeffs::Vector{T}
 
     function Polynomial{T}() where {T}
@@ -10,15 +12,9 @@ struct Polynomial{T}
             return new{T}(Vector{T}([zero(T)]))
         end
 
-        index = lastindex(coeff)
-        for i in lastindex(coeff):-1:firstindex(coeff)
-            if !iszero(coeff[i])
-                index = i
-                break
-            end
-            if i == firstindex(coeff)
-                return new{T}(Vector{T}([zero(T)]))
-            end
+        index = findlast(x -> !iszero(x), coeff)
+        if isnothing(index)
+            return new{T}(Vector{T}([zero(T)]))
         end
 
         return new{T}(coeff[begin:index])
@@ -27,7 +23,6 @@ end
 
 function copy(p::Polynomial{T})::Polynomial{T} where {T}
     r = Base.copy(p.coeffs)
-    # println(r)
     return Polynomial{T}(r)
 end
 
@@ -82,19 +77,38 @@ function Base.:(+)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
     return Polynomial{T}(r.coeffs)
 end
 
+function Base.:(+)(p::Polynomial{T}, a::T)::Polynomial{T} where {T}
+    return p + Polynomial{T}([a])
+end
+
+function Base.:(+)(a::T, p::Polynomial{T})::Polynomial{T} where {T}
+    return p + Polynomial{T}([a])
+end
+
 function Base.:(-)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
     m = length(p.coeffs)
     n = length(q.coeffs)
 
-    if m > n
+    if m >= n
         r = copy(p)
         r.coeffs[begin:n] .-= q.coeffs
+        return Polynomial{T}(r.coeffs)
     else
-        r = copy(q)
-        r.coeffs[begin:m] .-= p.coeffs
+        r_coeffs = Base.copy(p.coeffs)
+        for _ in (length(p.coeffs)+1):length(q.coeffs)
+            append!(r_coeffs, zero(T))
+        end
+        r_coeffs .-= q.coeffs
+        return Polynomial{T}(r_coeffs)
     end
+end
 
-    return Polynomial{T}(r.coeffs)
+function Base.:(-)(p::Polynomial{T}, a::T)::Polynomial{T} where {T}
+    return p - Polynomial{T}([a])
+end
+
+function Base.:(-)(a::T, p::Polynomial{T})::Polynomial{T} where {T}
+    return Polynomial{T}([a]) - p
 end
 
 function Base.:(*)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
@@ -112,8 +126,16 @@ function Base.:(*)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
     return r
 end
 
+function Base.:(*)(p::Polynomial{T}, a::T)::Polynomial{T} where {T}
+    return Polynomial{T}(p.coeffs .* a)
+end
+
+function Base.:(*)(a::T, p::Polynomial{T})::Polynomial{T} where {T}
+    return Polynomial{T}(p.coeffs .* a)
+end
+
 # Fix this
-function Base.:(/)(p::Polynomial{T}, q::Polynomial{T})::Tuple{Polynomial{T},Polynomial{T}} where {T}
+function Base.divrem(p::Polynomial{T}, q::Polynomial{T})::Tuple{Polynomial{T},Polynomial{T}} where {T}
     if q == Polynomial{T}()
         throw(ErrorException("polynomial division by 0-polynomial"))
     end
@@ -138,19 +160,28 @@ function Base.:(/)(p::Polynomial{T}, q::Polynomial{T})::Tuple{Polynomial{T},Poly
     return (quotent, remainder)
 end
 
-
-function Base.:(//)(p::Polynomial{T}, q::Polynomial{T})::(Polynomial{T}, Polynomial{T}) where {T}
-    return (p/q)[1]
+function Base.:(/)(p::Polynomial{T}, q::Polynomial{T})::Tuple{Polynomial{T},Polynomial{T}} where {T}
+    return Base.divrem(p, q)
 end
 
-function Base.:(%)(p::Polynomial{T}, q::Polynomial{T})::(Polynomial{T}, Polynomial{T}) where {T}
-    return (p/q)[2]
+function Base.:(//)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
+    return (divrem(p, q))[1]
 end
 
-function value(p::Polynomial{T}, arg::S)::S where {T,S}
-    res = zero(S)
+function Base.:(%)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
+    return (divrem(p, q))[2]
+end
+
+# function (p::Polynomial{T})(x::T)::T where {T}
+# end
+
+# function valdiff(p::Polynomial{T}, x::T) where {T}
+# end
+
+function value(p::Polynomial{T}, arg::T)::T where {T}
+    res = zero(T)
     for i in eachindex(p.coeffs)
-        res += arg^(i - 1) * S(p.coeffs[i])
+        res += arg^(i - 1) * T(p.coeffs[i])
     end
     return res
 end
@@ -168,12 +199,12 @@ function differentiate(p::Polynomial{T})::Polynomial{T} where {T}
     return Polynomial{T}(coeffs)
 end
 
-function derivative(p::Polynomial{T}, arg::S)::S where {T,S}
+function derivative(p::Polynomial{T}, arg::T)::T where {T}
     dp = differentiate(p)
     return value(dp, arg)
 end
 
-function display(p::Polynomial{T})::String where {T}
+function Base.display(p::Polynomial{T})::String where {T}
     res = ""
     for i in reverse(eachindex(p.coeffs))
         if p.coeffs[i] != zero(T)
@@ -188,11 +219,15 @@ function display(p::Polynomial{T})::String where {T}
             end
         end
     end
-    return res
-end
-
-function display!(p::Polynomial{T})::String where {T}
-    res = display(p)
     println(res)
     return res
 end
+
+# function display!(p::Polynomial{T})::String where {T}
+#     res = display(p)
+#     println(res)
+#     return res
+# end
+
+# p = Polynomial{Int64}([1, 2, 3, 4, 5])
+# q = Polynomial{Int64}([-1, 2, -3])

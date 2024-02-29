@@ -39,13 +39,17 @@ end
     @test Polynomial{Int64}([0, 2, 3, 5]) * Polynomial{Int64}([1, 2, 3, 0]) == Polynomial{Int64}([0, 2, 7, 17, 19, 15])
 end
 
-@testset "Div" begin
+@testset "Divrem" begin
     @test Polynomial{Float64}([2.0, 0.0, 6.0, 0.0, 1.0]) / Polynomial{Float64}([5.0, 0.0, 1.0]) == (Polynomial{Float64}([1.0, 0.0, 1.0]), Polynomial{Float64}([-3.0]))
 end
 
-@testset "Rem" begin end
+@testset "Div" begin
+    @test Polynomial{Float64}([2.0, 0.0, 6.0, 0.0, 1.0]) // Polynomial{Float64}([5.0, 0.0, 1.0]) == Polynomial{Float64}([1.0, 0.0, 1.0])
+end
 
-@testset "Divrem" begin end
+@testset "Rem" begin
+    @test Polynomial{Float64}([2.0, 0.0, 6.0, 0.0, 1.0]) % Polynomial{Float64}([5.0, 0.0, 1.0]) == Polynomial{Float64}([-3.0])
+end
 
 @testset "Value" begin
     @test value(Polynomial{Int64}([0, 2, 3, 5]), 0) == 0
@@ -61,6 +65,5 @@ end
 
 @testset "Display" begin
     @test display(Polynomial{Int64}([0, 2, 3, 5])) == "5x^3 + 3x^2 + 2x"
-    @test display!(Polynomial{Int64}([0, 2, 3, 5])) == "5x^3 + 3x^2 + 2x"
-    @test display!(Polynomial{Int64}([1, 2, 3, 5])) == "5x^3 + 3x^2 + 2x + 1"
+    @test display(Polynomial{Int64}([1, 2, 3, 5])) == "5x^3 + 3x^2 + 2x + 1"
 end
