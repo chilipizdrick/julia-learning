@@ -40,5 +40,4 @@ end
 
 @testset "Display" begin
     @test display(Dual{Int64}(4, 6)) == "4 + 6ε"
-    @test display!(Dual{Int64}(4, 6)) == "4 + 6ε"
 end

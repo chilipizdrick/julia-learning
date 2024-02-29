@@ -166,6 +166,10 @@ function Base.:(//)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
     return (divrem(p, q))[1]
 end
 
+function Base.:(÷)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
+    return (divrem(p, q))[1]
+end
+
 function Base.:(%)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
     return (divrem(p, q))[2]
 end
