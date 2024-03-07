@@ -188,7 +188,7 @@ function (p::Polynomial{T})(x) where {T}
 end
 
 function valdiff(p::Polynomial{T}, x::T) where {T}
-    res, diffres = zero(T), zero(T)
+    res, diffres = Base.zero(T), Base.zero(T)
     for i in lastindex(p.coeffs):-1:2
         res = res*x + p.coeffs[i]
         diffres = diffres*x + (i-1)*p.coeffs[i]

@@ -1,3 +1,5 @@
+include("../polynomial/polynomial.jl")
+
 struct Dual{T} <: Number
     a::T
     b::T
@@ -7,11 +9,11 @@ struct Dual{T} <: Number
     end
 
     function Dual{T}(a::T)::Dual{T} where {T}
-        return new{T}(a, Base.zero(T))
+        return new{T}(a, Base.one(T))
     end
 
     function Dual{T}()::Dual{T} where {T}
-        return new{T}(Base.zero(T), Base.zero(T))
+        return new{T}(Base.one(T), Base.one(T))
     end
 end
 
@@ -32,6 +34,8 @@ Base.:(-)(d::Dual{T}) where {T} = Dual{T}(-d.a, -d.b)
 Base.:(+)(d::Dual{T}, d2::Dual{T}) where {T} = Dual{T}(d.a + d2.a, d.b + d2.b)
 Base.:(+)(d::Dual{T}, n::T) where {T} = Dual{T}(d.a + n, d.b)
 Base.:(+)(n::T, d::Dual{T}) where {T} = Dual{T}(n + d.a, d.b)
+Base.:(+)(d::Dual{T}, n::Number) where {T} = Dual{T}(d.a + n, d.b)
+Base.:(+)(n::Number, d::Dual{T}) where {T} = Dual{T}(n + d.a, d.b)
 
 Base.:(-)(d::Dual{T}, d2::Dual{T}) where {T} = Dual{T}(d.a - d2.a, d.b - d2.b)
 Base.:(-)(d::Dual{T}, n::T) where {T} = Dual{T}(d.a - n, d.b)
@@ -40,6 +44,7 @@ Base.:(-)(n::T, d::Dual{T}) where {T} = Dual{T}(n - d.a, d.b)
 Base.:*(x::Dual{T}, y::Dual{T}) where {T} = Dual{T}(x.a * y.a, x.a * y.b + x.b * y.a)
 Base.:*(x::Dual{T}, y::T) where {T} = Dual{T}(x.a * y, x.b * y)
 Base.:*(x::T, y::Dual{T}) where {T} = Dual{T}(x * y.a, x * y.b)
+Base.:*(x::Number, y::Dual{T}) where {T} = Dual{T}(x * y.a, x * y.b)
 
 Base.:/(x::Dual{T}, y::Dual{T}) where {T} = Dual{T}(x.a / y.a, (x.b * y.a - x.a * y.b) / (y.a * y.a))
 Base.:/(x::Dual{T}, y::T) where {T} = Dual{T}(x.a / y, x.b / y)
@@ -69,14 +74,20 @@ Base.exp(x::Dual{T}) where {T} = Dual{T}(exp(x.a), x.b * exp(x.a))
 Base.log(x::Dual{T}) where {T} = Dual{T}(log(x.a), x.b / (x.a * log(x.a)))
 Base.log2(x::Dual{T}) where {T} = Dual{T}(log2(x.a), x.b / (x.a * log2(x.a)))
 Base.log10(x::Dual{T}) where {T} = Dual{T}(log10(x.a), x.b / (x.a * log10(x.a)))
-Base.log(a::AbstractFloat, ::Dual{T}) where {T} = Dual{T}(log(a, x.a), x.b / (x.a * log(a, x.a)))
+Base.log(a::Number, ::Dual{T}) where {T} = Dual{T}(log(a, x.a), x.b / (x.a * log(a, x.a)))
 
-function valdiff(f::Function, x)
-    return f(x), f(x)
+function valdiff(f::Function, x::T)::Tuple where {T}
+    z = f(Dual{T}(x))
+    return real(z), imag(z)
 end
 
 function Base.display(d::Dual{T}) where {T}
     res = "$(d.a) + $(d.b)ε"
     println(res)
     return res
+end
+
+function valdiff(p::Polynomial{T}, x::T, ::Type{Dual})::Tuple{T,T} where {T}
+    z = p(Dual{T}(x))
+    return real(z), imag(z)
 end
