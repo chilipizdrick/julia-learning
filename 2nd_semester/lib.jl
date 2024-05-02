@@ -11,6 +11,14 @@ struct Polynomial{T} <: AbstractPolynomial
         return new{T}(Vector{T}([Base.zero(T)]))
     end
 
+    function Polynomial{T}(::Type{T}) where {T}
+        return new{T}(Vector{T}([Base.zero(T)]))
+    end
+
+    function Polynomial{T}(a::T) where {T}
+        return new{T}(Vector{T}([a]))
+    end
+
     function Polynomial{T}(coeff::Vector{T}) where {T}
         if length(coeff) < 1
             return new{T}(Vector{T}([Base.zero(T)]))
@@ -47,17 +55,17 @@ function copy(p::Polynomial{T})::Polynomial{T} where {T}
     return Polynomial{T}(r)
 end
 
-function Base.zero(p::Polynomial{T})::Polynomial{T} where {T}
+function Base.zero(_::Polynomial{T})::Polynomial{T} where {T}
     return Polynomial{T}(Base.zero(T))
 end
-function Base.zero(::Polynomial{T})::Polynomial{T} where {T}
+function Base.zero(::Type{Polynomial{T}})::Polynomial{T} where {T}
     return Polynomial{T}(Base.zero(T))
 end
 
-function Base.one(p::Polynomial{T})::Polynomial{T} where {T}
+function Base.one(_::Polynomial{T})::Polynomial{T} where {T}
     return Polynomial{T}(Base.one(T))
 end
-function Base.one(::Polynomial{T})::Polynomial{T} where {T}
+function Base.one(::Type{Polynomial{T}})::Polynomial{T} where {T}
     return Polynomial{T}(Base.one(T))
 end
 
@@ -83,6 +91,54 @@ function Base.:(!=)(p::Polynomial{T}, q::Polynomial{T})::Bool where {T}
         end
     end
     return false
+end
+
+function Base.:(>)(p::Polynomial{T}, q::Polynomial{T})::Bool where {T}
+    if length(p.coeffs) != length(q.coeffs)
+        return length(p.coeffs) > length(q.coeffs) ? true : false
+    end
+    for i in length(p.coeffs):1
+        if p.coeffs[i] <= p.coeffs[i]
+            return false
+        end
+    end
+    return true
+end
+
+function Base.:(<)(p::Polynomial{T}, q::Polynomial{T})::Bool where {T}
+    if length(p.coeffs) != length(q.coeffs)
+        return length(p.coeffs) < length(q.coeffs) ? true : false
+    end
+    for i in length(p.coeffs):1
+        if p.coeffs[i] >= p.coeffs[i]
+            return false
+        end
+    end
+    return true
+end
+
+function Base.:(>=)(p::Polynomial{T}, q::Polynomial{T})::Bool where {T}
+    if length(p.coeffs) != length(q.coeffs)
+        return length(p.coeffs) > length(q.coeffs) ? true : false
+    end
+    for i in length(p.coeffs):1
+        if p.coeffs[i] < p.coeffs[i]
+            return false
+        end
+    end
+    return true
+end
+
+function Base.:(<=)(p::Polynomial{T}, q::Polynomial{T})::Bool where {T}
+    if length(p.coeffs) != length(q.coeffs)
+        return length(p.coeffs) < length(q.coeffs) ? true : false
+    end
+    for i in length(p.coeffs):1
+        if p.coeffs[i] > p.coeffs[i]
+            return false
+        end
+    end
+    return true
 end
 
 function lead(p::Polynomial{T})::T where {T}
@@ -131,7 +187,7 @@ function Base.:(-)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
     else
         r_coeffs = Base.copy(p.coeffs)
         for _ in (length(p.coeffs)+1):length(q.coeffs)
-            append!(r_coeffs, Base.zero(T))
+            push!(r_coeffs, Base.zero(T))
         end
         r_coeffs .-= q.coeffs
         return Polynomial{T}(r_coeffs)
@@ -181,9 +237,9 @@ function Base.divrem(p::Polynomial{T}, q::Polynomial{T})::Tuple{Polynomial{T},Po
         coeffs = Vector{T}()
         power = ord(remainder) - ord(q)
         for _ in 1:power
-            append!(coeffs, [Base.zero(T)])
+            push!(coeffs, Base.zero(T))
         end
-        append!(coeffs, [lead(remainder) / lead(q)])
+        push!(coeffs, lead(remainder) / lead(q))
         t = Polynomial{T}(coeffs)
 
         quotent = quotent + t
@@ -197,7 +253,7 @@ function Base.:(/)(p::Polynomial{T}, q::Polynomial{T})::Tuple{Polynomial{T},Poly
     return Base.divrem(p, q)
 end
 
-function Base.:(//)(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
+function Base.div(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
     return (divrem(p, q))[1]
 end
 
@@ -211,6 +267,10 @@ end
 
 function Base.mod(p::Polynomial{T}, q::Polynomial{T})::Polynomial{T} where {T}
     return (divrem(p, q))[2]
+end
+
+function Base.mod(p::Polynomial{T}, q::Tuple)::Polynomial{T} where {T}
+    return mod(p, Polynomial{T}(q))
 end
 
 function (p::Polynomial{T})(x) where {T}
@@ -377,9 +437,6 @@ struct Residue{T,M}
     value::T
 
     function Residue{T,M}(value::T) where {T,M}
-        if isa(M, Tuple)
-            return new(Base.mod(value, T(M)))
-        end
         return new(Base.mod(value, M))
     end
 end
@@ -392,6 +449,13 @@ Base.one(::Type{Residue{T,M}}) where {T,M} = Residue{T,M}(Base.one(T))
 Base.one(::Residue{T,M}) where {T,M} = Residue{T,M}(Base.one(T))
 Base.eps(::Type{Residue{T,M}}) where {T,M} = Residue{T,M}(Base.eps(T))
 Base.eps(::Residue{T,M}) where {T,M} = Residue{T,M}(Base.eps(T))
+
+Base.:(==)(a::Residue{T,M}, b::Residue{T,M}) where {T,M} = a.value == b.value
+Base.:(!=)(a::Residue{T,M}, b::Residue{T,M}) where {T,M} = a.value != b.value
+Base.:(<)(a::Residue{T,M}, b::Residue{T,M}) where {T,M} = a.value < b.value
+Base.:(>)(a::Residue{T,M}, b::Residue{T,M}) where {T,M} = a.value > b.value
+Base.:(<=)(a::Residue{T,M}, b::Residue{T,M}) where {T,M} = a.value <= b.value
+Base.:(>=)(a::Residue{T,M}, b::Residue{T,M}) where {T,M} = a.value >= b.value
 
 Base.:(+)(a::Residue{T,M}, b::Residue{T,M}) where {T,M} = Residue{T,M}(a.value + b.value)
 Base.:(-)(a::Residue{T,M}, b::Residue{T,M}) where {T,M} = Residue{T,M}(a.value - b.value)
@@ -610,7 +674,7 @@ function gcdx_(a::T, b::T)::Tuple{T,T,T} where {T}
         u, u_ = u_, u - k * u_
         v, v_ = v_, v - k * v_
     end
-    if a < 0
+    if a < zero(T)
         a, u, v = -a, -u, -v
     end
     return a, u, v
@@ -668,4 +732,109 @@ function degree(n::T, d::T)::T where {T<:Integer}
         i += 1
     end
     return i
+end
+
+# --- Inverse Gaussian matrix transform ---
+
+function inverse_gaussian_step(matrix::Matrix{T})::Matrix{T} where {T<:Number}
+    m, _ = size(matrix)
+    coeff = matrix[m, m]
+    matrix[m, :] ./= coeff
+    current_row = m
+    for _ in m:-1:2
+        for k in current_row:-1:1
+            if k != current_row
+                matrix[k, :] .-= (@view(matrix[current_row, :]) .*
+                                  matrix[k, current_row])
+            end
+        end
+        current_row -= 1
+        coeff = matrix[current_row, current_row]
+        matrix[current_row, :] ./= coeff
+    end
+    return matrix
+end
+
+function upper_triangular_gaussian(matrix::Matrix{T})::Matrix{T} where {T<:Number}
+    m, _ = size(matrix)
+    coeff = matrix[1, 1]
+    matrix[1, :] ./= coeff
+    current_row = 1
+    for _ in 1:m-1
+        for k in current_row:m
+            if k != current_row
+                matrix[k, :] .-= (@view(matrix[current_row, :]) .*
+                                  matrix[k, current_row])
+            end
+        end
+        current_row += 1
+        coeff = matrix[current_row, current_row]
+        matrix[current_row, :] ./= coeff
+    end
+    return matrix
+end
+
+# Unoptimized gaussian elimination
+function gaussian_solve(matrix::Matrix{T})::Matrix{T} where {T}
+    return inverse_gaussian_step(upper_triangular_gaussian(matrix))
+end
+
+function determinant(matrix::Matrix{T})::T where {T}
+    determinant = 1
+
+    m, n = size(matrix)
+    @assert(m == n)
+
+    m, _ = size(matrix)
+    for i in axes(matrix, 1)
+        if matrix[i, i] == 0.0
+            swap_rows(i, m)
+        end
+        @view(matrix[i, :]) ./= matrix[i, i]
+        determinant *= matrix[i, i]
+        for j in axes(matrix, 1)
+            if j != i
+                @view(matrix[j, :]) .-= matrix[i, :] .* matrix[j, i]
+            end
+        end
+    end
+
+    return determinant
+end
+
+function rank(matrix::Matrix{T})::Int64 where {T}
+    ctn = 0
+    matrix = gaussian_elimination(matrix)
+    _, n = size(matrix)
+    for i in axes(matrix, 1)
+        if any(matrix[i, :] != 0)
+            ctn += 1
+        end
+    end
+    return ctn
+end
+
+# Optimized gaussian elimination
+function gaussian_elimination(A::Matrix{T})::Matrix{T} where {T<:Number}
+    m, _ = size(A)
+    for i in axes(A, 1)
+        if A[i, i] == 0.0
+            swap_rows(i, m)
+        end
+        @view(A[i, :]) ./= A[i, i]
+        for j in axes(A, 1)
+            if j != i
+                @view(A[j, :]) .-= A[i, :] .* A[j, i]
+            end
+        end
+    end
+    return A
+end
+
+function swap_rows(i::T, m::T) where {T<:Integer}
+    for n in (i+1):m
+        if A[n, i] != 0.0
+            A[i, :], A[n, :] = A[i, :], A[n, :]
+        end
+    end
 end
