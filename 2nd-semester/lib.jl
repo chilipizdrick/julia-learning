@@ -843,7 +843,212 @@ end
 
 # --- Sorting ---
 
+function swap!(arr, i, j)
+    temp = arr[i]
+    arr[i] = arr[j]
+    arr[j] = temp
+end
 
+function iota(l)
+    res = zeros(Int, l)
+    for i in range(1, l)
+        res[i] = i
+    end
+    return res
+end
+
+function bubleperm(arr)
+    res = iota(length(arr))
+    for i in range(1, length(arr))
+        for j in range(i + 1, length(arr))
+            if arr[res[i]] > arr[res[j]]
+                swap!(res, i, j)
+            end
+        end
+    end
+    return res
+end
+
+
+function insertperm(arr)
+    res = iota(length(arr))
+    for j in range(2, length(arr))
+        key = arr[j]
+        i = j - 1
+        while i >= 1 && arr[i] > key
+            arr[i+1] = arr[i]
+            i = i - 1
+        end
+        arr[i+1] = key
+    end
+    return res
+end
+
+function seftperm(arr, factor=1.25)
+    res = iota(length(arr))
+    step = length(arr) - 1
+
+    while (step >= 1)
+        i = 1
+        while i + step <= length(arr)
+            if arr[res[i]] > arr[res[i+step]]
+                swap!(res, i, i + step)
+            end
+            i += 1
+        end
+        step /= factor
+        step = Int(floor(step))
+    end
+    return res
+end
+
+function shellperm(arr)
+    res = iota(length(arr))
+    s = Int(floor(length(arr) // 2))
+    while s > 0
+        i = s
+        while i < length(arr)
+            j = i - s
+            while j >= 0 && arr[res[j+1]] > arr[res[j+s+1]]
+                swap!(res, j + 1, j + s + 1)
+                j -= s
+            end
+            i += 1
+        end
+        s //= 2
+        s = Int(floor(s))
+    end
+    return res
+end
+
+divv(a, b) = Int(floor(a / b))
+
+function waveperm(arr)
+    function unite(a, b)
+        if length(a) == 0
+            return b
+        elseif length(b) == 0
+            return a
+        elseif arr[a[begin]] < arr[b[begin]]
+            return hcat([a[begin]], unite(a[2:end], b))
+        else
+            return hcat([b[begin]], unite(a, b[2:end]))
+        end
+    end
+
+    function wave(res)
+        if length(res) <= 1
+            return res
+        end
+        return unite(
+            wave(res[begin:divv(length(res), 2)]),
+            wave(res[divv(length(res), 2)+1:end])
+        )
+    end
+    return wave(iota(length(arr)))
+end
+
+function hoarperm(arr)
+    res = iota(length(arr))
+
+    function partition(l, r)
+        pivot = rand(res[l:r])
+        m = l
+        for i in l:r
+            if arr[res[i]] < arr[pivot]
+                swap!(res, i, m)
+                m += 1
+            end
+        end
+        return m
+    end
+
+    function qsort(low, high)
+        if low < high
+            p = partition(low, high)
+            qsort(low, p - 1)
+            qsort(p, high)
+        end
+    end
+    qsort(1, length(res))
+    return res
+end
+
+function median(arr)
+    p = hoarperm(arr)
+    return arr[p[divv(length(p), 2)]]
+end
+
+function sift_perm(arr)
+    res = iota(length(arr))
+
+    function sift_up(i)
+        if i == 1
+            return
+        elseif arr[res[divv(i, 2)]] < arr[res[i]]
+            swap!(res, divv(i, 2), i)
+        end
+    end
+    len = length(arr)
+    function sift_down(i)
+        target = nothing
+        if i * 2 <= len
+            target = i * 2
+        end
+        if i * 2 + 1 <= len
+            if arr[res[target]] < arr[res[i*2+1]]
+                target = i * 2 + 1
+            end
+        end
+        if !isnothing(target) && arr[res[target]] > arr[res[i]]
+            swap!(res, i, target)
+            sift_down(target)
+        end
+    end
+    for i in 1:length(arr)
+        sift_up(i)
+    end
+    for i in 1:length(arr)
+        swap!(res, 1, len)
+        len -= 1
+        sift_down(1)
+    end
+    return res
+end
+
+function count_sort(arr::Array{Int})
+    mi::Int = 1000000000
+    mx::Int = -100000000000
+    for i in arr
+        if i < mi
+            mi = i
+        end
+        if i > mx
+            mx = i
+        end
+    end
+    cnts = zeros(Int, mx - mi + 1)
+    for i = 1:length(arr)
+        cnts[arr[i]-mi+1] += 1
+    end
+
+    res = []
+    for i = 1:length(cnts)
+        for j in 1:cnts[i]
+            push!(res, i + mi - 1)
+        end
+    end
+    return res
+end
+
+function my_sort(arr::AbstractVector{T}, perm_fnc=bubleperm) where {T}
+    perm = perm_fnc(arr)
+    res = zeros(T, length(arr))
+    for i in range(1, length(perm))
+        res[i] = arr[perm[i]]
+    end
+    return res
+end
 
 # --- Vector2D ---
 
@@ -1027,3 +1232,268 @@ function intersection(s1::Segment2D{T}, s2::Segment2D{T}) where {T}
 end
 
 # ---Combinatorics---
+
+function next_repit_placement!(p::Vector{T}, n::T) where {T<:Integer}
+    i = findlast(x -> x < n, p)
+    if isnothing(i)
+        return nothing
+    end
+    p[i] += 1
+    p[i+1:end] .= 1
+    return p
+end
+
+function generate_repit_placements(n::Integer, k::Integer)
+    p = ones(Int, k)
+    placements = [copy(p)]
+    while !isnothing(p)
+        p = next_repit_placement!(p, n)
+        if !isnothing(p)
+            push!(placements, copy(p))
+        end
+    end
+    return placements
+end
+
+function next_permute!(p::AbstractVector)
+    n = length(p)
+    k = firstindex(p) - 1
+    for i in reverse(1:n-1)
+        if p[i] < p[i+1]
+            k = i
+            break
+        end
+    end
+
+    k == firstindex(p) - 1 && return nothing
+
+    i = k + 1
+    while i < n && p[k] < p[i+1]
+        i += 1
+    end
+
+    p[k], p[i] = p[i], p[k]
+    reverse!(@view p[k+1:end])
+    return p
+end
+
+function generate_subsets(n::Int)
+    # There are 2^n subsets for the set {1, 2, ..., n}
+    subsets = Vector{Vector{Bool}}()
+
+    for i = 0:(2^n-1)
+        subset = Bool[digits(i, base=2, pad=n)[j] == 1 for j = n:-1:1]
+        push!(subsets, subset)
+    end
+
+    return subsets
+end
+
+indicator(i::Integer, n::Integer) = digits(Bool, i; base=2, pad=n)
+
+function next_indicator!(indicator::AbstractVector{Bool})
+    i = findlast(x -> (x == 0), indicator)
+    isnothing(i) && return nothing
+    indicator[i] = 1
+    indicator[i+1:end] *= 0
+    return indicator
+end
+
+function next_indicator!(indicator::AbstractVector{Bool}, k::Int)
+    # Find the first 0 followed by 1
+    for i in length(indicator):-1:2
+        if indicator[i-1] == false && indicator[i] == true
+            # Switch the 0 and 1
+            indicator[i-1], indicator[i] = true, false
+            # Move all 1s following this position to the end
+            tail = indicator[i:end]
+            num_ones = count(identity, tail)
+            indicator[i:end] .= [fill(false, length(tail) - num_ones); fill(true, num_ones)]
+            return true
+        end
+    end
+    # If no valid next combination found, return false
+    return false
+end
+
+function first_split!(s::AbstractVector{Int}, n::Int, k::Int)
+    s[1] = n
+    for i in 2:k
+        s[i] = 0
+    end
+end
+
+function next_split!(s::AbstractVector{Int}, k::Int)
+    for i in k:-1:2
+        if s[i] > 0
+            s[i] -= 1
+            s[i-1] += 1
+            if any(x -> x > 0, s[i+1:end])
+                s[i+1:end] .= 0
+                s[k] = 0
+            end
+            return true
+        end
+    end
+    return false
+end
+
+abstract type AbstractCombinObject end
+
+Base.iterate(obj::AbstractCombinObject) = (get(obj), nothing)
+Base.iterate(obj::AbstractCombinObject, state) =
+    if isnothing(next!(obj))
+        nothing
+    else
+        (get(obj), nothing)
+    end
+
+struct RepitPlacement{N,K} <: AbstractCombinObject
+    value::Vector{Int}
+    RepitPlacement{N,K}() where {N,K} = new(ones(Int, K))
+end
+
+get(p::RepitPlacement) = p.value
+
+function next_repit_placement!(value::Vector{Int}, N::Int)
+    for i in length(value):-1:1
+        if value[i] < N
+            value[i] += 1
+            fill!(value[i+1:end], 1)
+            return true
+        end
+    end
+    return false
+end
+
+function next!(p::RepitPlacement{N,K}) where {N,K}
+    next_repit_placement!(p.value, N)
+end
+
+struct Permute{N} <: AbstractCombinObject
+    value::Vector{Int}
+    function Permute{N}() where {N}
+        return new(collect(1:N))
+    end
+end
+
+get(obj::Permute) = obj.value
+
+function next_permute!(value::Vector{Int})
+    k = findlast(i -> value[i] < value[i+1], 1:length(value)-1)
+    if k === nothing
+        return false
+    end
+    l = findlast(i -> value[k] < value[i], k+1:length(value))
+    value[k], value[l] = value[l], value[k]
+    reverse!(value, k + 1, length(value))
+    return true
+end
+
+function next!(permute::Permute{N}) where {N}
+    next_permute!(permute.value)
+end
+
+struct Subsets{N} <: AbstractCombinObject
+    value::Vector{Int}
+    indicator::Vector{Bool}
+    Subsets{N}() where {N} = new([0 for _ in 1:N], zeros(Bool, N))
+end
+
+get(sub::Subsets) = sub.indicator
+
+function next_indicator!(indicator::Vector{Bool})
+    for i in length(indicator):-1:1
+        if indicator[i] == false
+            indicator[i] = true
+            fill!(indicator[i+1:end], false)
+            return true
+        end
+    end
+    return false
+end
+
+function next!(sub::Subsets{N}) where {N}
+    next_indicator!(sub.indicator)
+end
+
+struct KSubsets{M,K} <: AbstractCombinObject
+    value::Vector{Int}
+    indicator::Vector{Bool}
+    KSubsets{M,K}() where {M,K} = new([0 for _ in 1:length(M)], [fill(false, length(M) - K); fill(true, K)])
+end
+
+get(sub::KSubsets) = sub.indicator
+
+function next_indicator!(indicator::Vector{Bool}, k::Int)
+    for i in length(indicator):-1:2
+        if indicator[i-1] == false && indicator[i] == true
+            indicator[i-1], indicator[i] = true, false
+            tail = indicator[i:end]
+            num_ones = count(identity, tail)
+            indicator[i:end] = [fill(false, length(tail) - num_ones); fill(true, num_ones)]
+            return true
+        end
+    end
+    return false
+end
+
+function next!(sub::KSubsets{M,K}) where {M,K}
+    next_indicator!(sub.indicator, K)
+end
+
+struct NSplit{N} <: AbstractCombinObject
+    value::Vector{Int}
+    num_terms::Int
+    NSplit{N}() where {N} = new([N; fill(0, N - 1)], 1)
+end
+
+get(nsplit::NSplit) = nsplit.value[1:nsplit.num_terms]
+
+function next_split!(value::Vector{Int}, num_terms::Int)
+    for i in num_terms:-1:2
+        if value[i] > 0
+            value[i] -= 1
+            value[i-1] += 1
+            return (value, num_terms)
+        end
+    end
+    return (value)
+end
+
+function next!(nsplit::NSplit{N}) where {N}
+    nsplit.value, nsplit.num_terms = next_split!(nsplit.value, nsplit.num_terms)
+    nsplit.num_terms != 0
+end
+
+function dfs(graph::Dict{I,Vector{I}}, vstart::I) where {I<:Integer}
+    stack = [vstart]
+    mark = zeros(Bool, length(graph))  # Mark all vertices as unvisited
+    mark[vstart] = true
+    while !isempty(stack)
+        v = pop!(stack)
+        println("Visited vertex: $v")  # Process vertex v
+        for u in graph[v]
+            if !mark[u]
+                mark[u] = true
+                push!(stack, u)
+            end
+        end
+    end
+end
+
+function bfs(graph::Dict{I,Vector{I}}, vstart::I) where {I<:Integer}
+    queue = [vstart]
+    mark = zeros(Bool, length(graph))  # Mark all vertices as unvisited
+    mark[vstart] = true
+    while !isempty(queue)
+        v = popfirst!(queue)
+        println("Visited vertex: $v")  # Process vertex v
+        for u in graph[v]
+            if !mark[u]
+                mark[u] = true
+                push!(queue, u)
+            end
+        end
+    end
+end
