@@ -44,7 +44,7 @@ end
 function triangulize(matrix::Matrix{T})::Matrix{T} where {T}
     for i in 1:size(matrix, 1)
         for j in 1:size(matrix, 2)
-            if i > j 
+            if i > j
                 matrix[i, j] = zero(T)
             end
         end
@@ -52,7 +52,7 @@ function triangulize(matrix::Matrix{T})::Matrix{T} where {T}
     return matrix
 end
 
-function printmatrix(matrix::Matrix, sep::String = "")
+function printmatrix(matrix::Matrix, sep::String="")
     for i in 1:size(matrix, 1)
         for j in 1:size(matrix, 2)
             print("$(matrix[i, j])$sep")
